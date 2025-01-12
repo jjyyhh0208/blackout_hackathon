@@ -31,7 +31,17 @@ class SlackClient:
     def get_conversation_history(self, channel: str, limit: int = 5) -> list:
         try:
             result = self.client.conversations_history(channel=channel, limit=limit)
-            return result["messages"]
+            messages = result["messages"]
+
+            seen_messages = set()
+            unique_messages = []
+
+            for message in messages:
+                if message["text"] not in seen_messages:
+                    unique_messages.append(message)
+                    seen_messages.add(message["text"])
+
+            return unique_messages
         except SlackApiError as e:
             logger.error(f"Slack API 에러: {e.response['error']}")
             return []
